@@ -6,6 +6,9 @@ from starlette.middleware.sessions import SessionMiddleware
 import random
 import smtplib
 from email.message import EmailMessage
+from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException
+
 
 # Dummy email credentials (USE ENV VARS IN PRODUCTION!)
 EMAIL_ADDRESS = "anjukashyap109@gmail.com"
@@ -28,6 +31,8 @@ def send_email(recipient: str, subject: str, body: str):
         print(f"Failed to send email: {e}")
 
 app = FastAPI()
+
+# Middleware to handle sessions
 app.add_middleware(SessionMiddleware, secret_key="1234567abcdefg")
 # Allow CORS for React
 app.add_middleware(
@@ -98,8 +103,10 @@ async def verify_password(email: str = Form(...), password: str = Form(...)):
 @app.post("/verify-otp")
 async def verify_otp(email: str = Form(...), otp: str = Form(...)):
     if otp_store.get(email) == otp:
-        return JSONResponse({"status": "success"})
+       return JSONResponse({"status": "success"})
+    
     return JSONResponse({"error": "Invalid OTP"}, status_code=400)
+
 
 @app.get("/logout")
 async def logout(request: Request):
